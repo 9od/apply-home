@@ -96,13 +96,14 @@ async function fetchAll(endpoint, baseConds, apiKey, maxPages = 10) {
  *   MVMN_PREARNGE_YM (입주예정월 YYYYMM)
  */
 export async function fetchAPTByRegion(apiKey, region, monthsBack = 1, monthsFwd = 4) {
+  // 청약종료일 기준: 오늘 이후 종료되는 것 + 앞으로 시작하는 것
+  // RCEPT_ENDDE >= (오늘 - 1달) : 이미 끝난 것도 약간 포함해서 종료 직전 것도 표시
   const from = isoDate(addMonths(new Date(), -monthsBack));
   const to   = isoDate(addMonths(new Date(), monthsFwd));
 
   return fetchAll('/getAPTLttotPblancDetail', {
     'cond[HSSPLY_ADRES::LIKE]': region,
     'cond[RCRIT_PBLANC_DE::GTE]': from,
-    'cond[RCRIT_PBLANC_DE::LTE]': to,
   }, apiKey);
 }
 
@@ -112,12 +113,10 @@ export async function fetchAPTByRegion(apiKey, region, monthsBack = 1, monthsFwd
  */
 export async function fetchAPTSeoul(apiKey, monthsBack = 1, monthsFwd = 4) {
   const from = isoDate(addMonths(new Date(), -monthsBack));
-  const to   = isoDate(addMonths(new Date(), monthsFwd));
 
   return fetchAll('/getAPTLttotPblancDetail', {
     'cond[SUBSCRPT_AREA_CODE_NM::EQ]': '서울',
     'cond[RCRIT_PBLANC_DE::GTE]': from,
-    'cond[RCRIT_PBLANC_DE::LTE]': to,
   }, apiKey);
 }
 
@@ -134,23 +133,19 @@ export async function fetchAPTSeoul(apiKey, monthsBack = 1, monthsFwd = 4) {
  */
 export async function fetchRemndrByRegion(apiKey, region, monthsBack = 1, monthsFwd = 4) {
   const from = isoDate(addMonths(new Date(), -monthsBack));
-  const to   = isoDate(addMonths(new Date(), monthsFwd));
 
   return fetchAll('/getRemndrLttotPblancDetail', {
     'cond[HSSPLY_ADRES::LIKE]': region,
     'cond[RCRIT_PBLANC_DE::GTE]': from,
-    'cond[RCRIT_PBLANC_DE::LTE]': to,
   }, apiKey);
 }
 
 export async function fetchRemndrSeoul(apiKey, monthsBack = 1, monthsFwd = 4) {
   const from = isoDate(addMonths(new Date(), -monthsBack));
-  const to   = isoDate(addMonths(new Date(), monthsFwd));
 
   return fetchAll('/getRemndrLttotPblancDetail', {
     'cond[SUBSCRPT_AREA_CODE_NM::EQ]': '서울',
     'cond[RCRIT_PBLANC_DE::GTE]': from,
-    'cond[RCRIT_PBLANC_DE::LTE]': to,
   }, apiKey);
 }
 
