@@ -2,7 +2,7 @@
 # config.json 은 Actions가 자동 생성하므로 저장소에 올리지 않아도 됩니다.
 # 아래 주석을 해제하면 config.json 이 git에서 제외됩니다.
 
-config.json
+# config.json
 
 # 방법 A (직접 키 입력) 사용 시:
 # config.json 을 Public 저장소에 올리게 되므로 키가 공개됩니다.

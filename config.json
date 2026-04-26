@@ -1,0 +1,14 @@
+{
+  "API_KEY": "Xugkvi%2BBl712bApHPvIhMgOrc66auGcTz40TXMCR6X9e37pszteZF3ehO8oiyzyjZ0r7SOMxhBXz1vZCScBNNQ%3D%3D",
+  "REGIONS": [
+    "수지",
+    "분당",
+    "광교",
+    "판교",
+    "위례",
+    "하남"
+  ],
+  "SEOUL": true,
+  "SEARCH_MONTHS_BACK": 1,
+  "SEARCH_MONTHS_FORWARD": 4
+}
