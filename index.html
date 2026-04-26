@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>청약 모니터 — 수지·분당·광교·판교·위례·하남·서울</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="logo">
+    <span class="live"></span>
+    청약 모니터
+  </div>
+  <div class="topbar-r">
+    <span id="lastUpdated">—</span>
+    <button id="btnRefresh">↻ 새로고침</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <!-- 통계 -->
+  <div class="stats">
+    <div class="sc">
+      <div class="lbl">APT 청약 진행 중</div>
+      <div class="val" id="statOpen">—</div>
+      <div class="sub">현재 접수 가능</div>
+    </div>
+    <div class="sc">
+      <div class="lbl">곧 시작 (14일 내)</div>
+      <div class="val" id="statSoon">—</div>
+      <div class="sub">청약 임박</div>
+    </div>
+    <div class="sc">
+      <div class="lbl">무순위·잔여 진행</div>
+      <div class="val" id="statRem">—</div>
+      <div class="sub">진행 + 임박 합산</div>
+    </div>
+    <div class="sc">
+      <div class="lbl">전체 공고 수</div>
+      <div class="val" id="statTotal">—</div>
+      <div class="sub">모든 상태 포함</div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="apt">
+      APT 분양
+      <span class="tab-cnt" id="cntApt">—</span>
+    </button>
+    <button class="tab-btn" data-tab="remndr">
+      무순위·잔여세대
+      <span class="tab-cnt" id="cntRem">—</span>
+    </button>
+  </div>
+
+  <!-- 필터 -->
+  <div class="fbar">
+    <div class="fg">
+      <label>지역</label>
+      <div class="chips" id="chipsRegion">
+        <button class="chip on" data-v="all">전체</button>
+        <button class="chip" data-v="수지">수지</button>
+        <button class="chip" data-v="분당">분당</button>
+        <button class="chip" data-v="광교">광교</button>
+        <button class="chip" data-v="판교">판교</button>
+        <button class="chip" data-v="위례">위례</button>
+        <button class="chip" data-v="하남">하남</button>
+        <button class="chip" data-v="서울">서울</button>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="fg">
+      <label>상태</label>
+      <div class="chips" id="chipsStatus">
+        <button class="chip on" data-v="all">전체</button>
+        <button class="chip" data-v="open">진행 중</button>
+        <button class="chip" data-v="soon">임박</button>
+        <button class="chip" data-v="announce">예정</button>
+        <button class="chip" data-v="end">종료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="sec-hdr">
+    <span class="sec-title">분양 목록</span>
+    <span class="cnt-badge" id="cntBadge">—</span>
+  </div>
+
+  <!-- 스켈레톤 -->
+  <div class="skeleton-wrap" id="skeleton">
+    <div class="skel-card">
+      <div class="skel" style="width:42%;"></div>
+      <div class="skel" style="width:62%;height:10px;"></div>
+      <div style="display:flex;gap:12px;margin-top:3px;">
+        <div class="skel" style="width:88px;"></div>
+        <div class="skel" style="width:72px;"></div>
+        <div class="skel" style="width:80px;"></div>
+      </div>
+    </div>
+    <div class="skel-card">
+      <div class="skel" style="width:55%;"></div>
+      <div class="skel" style="width:70%;height:10px;"></div>
+      <div style="display:flex;gap:12px;margin-top:3px;">
+        <div class="skel" style="width:75px;"></div>
+        <div class="skel" style="width:95px;"></div>
+      </div>
+    </div>
+    <div class="skel-card">
+      <div class="skel" style="width:38%;"></div>
+      <div class="skel" style="width:54%;height:10px;"></div>
+    </div>
+  </div>
+
+  <!-- 카드 목록 -->
+  <div class="card-list" id="cardList">
+    <div class="empty">데이터를 불러오는 중입니다…</div>
+  </div>
+
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

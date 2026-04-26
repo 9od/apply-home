@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 매일 오전 7시 KST (= UTC 22:00 전날)
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+    # GitHub Actions 탭에서 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: config.json 생성 (Secret 키 주입)
+        run: |
+          cat > config.json << 'JSONEOF'
+          {
+            "API_KEY": "${{ secrets.APPLYHOME_API_KEY }}",
+            "REGIONS": ["수지", "분당", "광교", "판교", "위례", "하남"],
+            "SEOUL": true,
+            "SEARCH_MONTHS_BACK": 1,
+            "SEARCH_MONTHS_FORWARD": 4
+          }
+          JSONEOF
+
+      - name: GitHub Pages 배포
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          # config.json 은 빌드 시 생성되므로 gh-pages 브랜치에만 존재
