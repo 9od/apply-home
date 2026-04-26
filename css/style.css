@@ -172,9 +172,10 @@ body {
   transition: border-color .12s, box-shadow .12s;
 }
 .apt-card:hover { border-color: var(--bd2); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
-.apt-card.is-open  { border-left: 3px solid var(--grn); }
-.apt-card.is-soon  { border-left: 3px solid #ca9900; }
-.apt-card.is-rem   { border-left: 3px solid var(--pur); }
+.apt-card.is-open      { border-left: 3px solid var(--grn); }
+.apt-card.is-soon      { border-left: 3px solid #ca9900; }
+.apt-card.is-scheduled { border-left: 3px solid #1a5fa3; }
+.apt-card.is-rem       { border-left: 3px solid var(--pur); }
 
 /* 상단: 단지명 + 뱃지 */
 .card-top { display: flex; flex-direction: column; gap: 0; }
@@ -228,6 +229,7 @@ body {
 .b-soon     { background: var(--amb-bg); color: var(--amb); border: 1px solid var(--amb-bd); }
 .b-announce { background: var(--acc-bg); color: var(--acc); border: 1px solid var(--acc-bd); }
 .b-end      { background: var(--surf2);  color: var(--tx3); border: 1px solid var(--bd); }
+.b-scheduled { background: #f0f7ff; color: #1a5fa3; border: 1px solid #b3d4f5; }
 .b-rem      { background: var(--pur-bg); color: var(--pur); border: 1px solid var(--pur-bd); }
 
 /* ── LINK / MAP BUTTON ── */

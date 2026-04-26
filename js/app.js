@@ -185,10 +185,11 @@ function dedup(arr, key) {
 
 // ── 상태 판별 ─────────────────────────────────────────────────────────
 /**
- * open     : 청약 접수 중
- * soon     : 14일 이내 청약 시작
- * announce : 공고됨 (청약 시작 14일 이상 남음)
- * end      : 종료
+ * open      : 오늘이 청약 접수 기간 안 (start <= today <= end)
+ * soon      : 청약 시작 14일 이내 (미래)
+ * scheduled : 청약 시작 14일 초과 (미래 확정)
+ * announced : 청약일 미정, 공고만 된 상태
+ * end       : 청약 종료일이 오늘보다 과거
  */
 function getStatus(item) {
   const today = todayNum();
@@ -197,15 +198,15 @@ function getStatus(item) {
   const notc  = dateNum(item.RCRIT_PBLANC_DE);
 
   if (start && end) {
-    if (today >= start && today <= end) return 'open';
+    if (today >= start && today <= end) return 'open';      // 접수 중
     if (today < start) {
       const diff = Math.ceil((new Date(item.RCEPT_BGNDE) - new Date()) / 86400000);
-      return diff <= 14 ? 'soon' : 'announce';
+      return diff <= 14 ? 'soon' : 'scheduled';              // 임박 or 예정
     }
-    return 'end';
+    return 'end';                                             // 종료 (end > today)
   }
-  // 접수일 미정인 경우 공고일 기준
-  if (notc) return today <= notc ? 'announce' : 'end';
+  // 접수일 미정: 공고일이 미래면 announced, 과거면 end
+  if (notc) return today <= notc ? 'announced' : 'end';
   return 'end';
 }
 
@@ -219,7 +220,11 @@ function dateNum(str) {
 function fmtDate(str) {
   if (!str) return '—';
   const [y, m, d] = str.split('-');
-  return `${parseInt(m)}/${parseInt(d)}`;
+  const thisYear = new Date().getFullYear().toString();
+  // 올해면 연도 생략, 다른 해면 연도 표시
+  return y === thisYear
+    ? `${parseInt(m)}/${parseInt(d)}`
+    : `${y.slice(2)}.${parseInt(m)}.${parseInt(d)}`;
 }
 function fmtYM(ym) {
   // YYYYMM → YYYY년 MM월
@@ -279,7 +284,7 @@ function applyFilters(items) {
 }
 
 function sortList(items) {
-  const order = { open: 0, soon: 1, announce: 2, end: 3 };
+  const order = { open: 0, soon: 1, scheduled: 2, announced: 3, end: 4 };
   return [...items].sort((a, b) => {
     const da = order[getStatus(a)];
     const db = order[getStatus(b)];
@@ -306,9 +311,27 @@ function buildCard(item) {
   const status = getStatus(item);
   const isRem  = activeTab === 'remndr';
 
-  const STATUS_LABEL = { open: '청약 진행 중', soon: '곧 시작', announce: '공고', end: '종료' };
-  const STATUS_CLS   = { open: 'b-open',       soon: 'b-soon',  announce: 'b-announce', end: 'b-end' };
-  const CARD_CLS     = { open: 'is-open',       soon: 'is-soon', announce: '', end: '' };
+  const STATUS_LABEL = {
+    open:      '청약 진행 중',
+    soon:      '곧 시작',
+    scheduled: '청약 예정',
+    announced: '공고',
+    end:       '종료',
+  };
+  const STATUS_CLS = {
+    open:      'b-open',
+    soon:      'b-soon',
+    scheduled: 'b-scheduled',
+    announced: 'b-announce',
+    end:       'b-end',
+  };
+  const CARD_CLS = {
+    open:      'is-open',
+    soon:      'is-soon',
+    scheduled: 'is-scheduled',
+    announced: '',
+    end:       '',
+  };
 
   const cardCls = isRem ? 'is-rem' : (CARD_CLS[status] ?? '');
 
