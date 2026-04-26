@@ -13,6 +13,6 @@
     "광명시"
   ],
   "SEOUL": true,
-  "SEARCH_MONTHS_BACK": 1,
+  "SEARCH_MONTHS_BACK": 12,
   "SEARCH_MONTHS_FORWARD": 4
 }
