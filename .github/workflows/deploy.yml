@@ -26,7 +26,18 @@ jobs:
           import os, json
           cfg = {
             "API_KEY": os.environ["API_KEY"],
-            "REGIONS": ["수지", "분당", "광교", "판교", "위례", "하남"],
+            "REGIONS": [
+              "수지구",
+              "분당구",
+              "영통구",
+              "장안구",
+              "권선구",
+              "팔달구",
+              "중원구",
+              "하남시",
+              "위례",
+              "광명시"
+            ],
             "SEOUL": True,
             "SEARCH_MONTHS_BACK": 1,
             "SEARCH_MONTHS_FORWARD": 4
