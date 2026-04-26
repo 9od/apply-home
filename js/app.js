@@ -115,9 +115,10 @@ async function loadAll() {
 
 /** 84㎡ 근방 주택형 정보 병렬 로드 */
 async function loadTypeInfo(items) {
-  const targets = items
-    .filter(i => i.PBLANC_NO && !typeCache.has(i.PBLANC_NO))
-    .slice(0, 50);
+  // 진행중/예정 우선, 나머지 뒤에 — 최대 100건
+  const active = items.filter(i => i.PBLANC_NO && !typeCache.has(i.PBLANC_NO) && getStatus(i) !== 'end');
+  const ended  = items.filter(i => i.PBLANC_NO && !typeCache.has(i.PBLANC_NO) && getStatus(i) === 'end');
+  const targets = [...active, ...ended].slice(0, 100);
 
   await Promise.allSettled(
     targets.map(async item => {
@@ -350,9 +351,9 @@ function buildCard(item) {
   const unitsHtml = units > 0
     ? `<span class="meta">공급 <b>${units.toLocaleString()}세대</b></span>` : '';
 
-  // 입주예정
+  // 입주예정 (시작일)
   const mvnHtml = item.MVMN_PREARNGE_YM
-    ? `<span class="meta">입주 <b>${fmtYM(item.MVMN_PREARNGE_YM)}</b></span>` : '';
+    ? `<span class="meta mvn">입주 <b>${fmtYM(item.MVMN_PREARNGE_YM)}</b></span>` : '';
 
   // 사업주체
   const bldHtml = item.BSNS_MBY_NM
@@ -391,27 +392,31 @@ function buildCard(item) {
 
   return `
 <div class="apt-card ${cardCls}">
-  <div class="card-body">
-    <div class="card-name">${esc(item.HOUSE_NM || item.BSNS_MBY_NM || '단지명 없음')}</div>
-    <div class="card-addr">${esc(item.HSSPLY_ADRES || '주소 정보 없음')}</div>
-    <div class="card-meta">
-      ${areaHtml}
-      ${dateHtml}
-      ${przHtml}
-      ${type84Html}
-      ${remndr84Html}
-      ${unitsHtml}
-      ${mvnHtml}
-      ${bldHtml}
+  <div class="card-title-row">
+    <div class="card-title-left">
+      <div class="card-name">${esc(item.HOUSE_NM || item.BSNS_MBY_NM || '단지명 없음')}</div>
+      <div class="card-addr">${esc(item.HSSPLY_ADRES || '주소 정보 없음')}</div>
+    </div>
+    <div class="card-badges">
+      ${remTypHtml}
+      <span class="badge ${STATUS_CLS[status]}">${STATUS_LABEL[status]}</span>
     </div>
   </div>
-  <div class="card-right">
-    ${remTypHtml}
-    <span class="badge ${STATUS_CLS[status]}">${STATUS_LABEL[status]}</span>
+  <div class="card-meta">
+    ${areaHtml}
+    ${dateHtml}
+    ${przHtml}
+    ${type84Html}
+    ${mvnHtml}
+    ${remndr84Html}
+    ${unitsHtml}
+    ${bldHtml}
+  </div>
+  <div class="card-actions">
     ${linkHtml}
     <a href="${kakaoUrl}" target="_blank" rel="noopener" class="map-btn">
       <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C5.24 1 3 3.18 3 5.87 3 9.85 8 15 8 15s5-5.15 5-9.13C13 3.18 10.76 1 8 1zm0 6.5a1.75 1.75 0 110-3.5 1.75 1.75 0 010 3.5z"/></svg>
-      지도
+      카카오맵
     </a>
   </div>
 </div>`;

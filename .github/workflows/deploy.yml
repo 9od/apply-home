@@ -32,8 +32,8 @@ jobs:
               "중원구", "하남시", "위례", "광명시"
             ],
             "SEOUL": True,
-            "SEARCH_MONTHS_BACK": 1,
-            "SEARCH_MONTHS_FORWARD": 4
+            "SEARCH_MONTHS_BACK": 12,
+            "SEARCH_MONTHS_FORWARD": 3
           }
           with open("config.json", "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
