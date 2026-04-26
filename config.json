@@ -1,0 +1,18 @@
+{
+  "API_KEY": "Xugkvi+Bl712bApHPvIhMgOrc66auGcTz40TXMCR6X9e37pszteZF3ehO8oiyzyjZ0r7SOMxhBXz1vZCScBNNQ==",
+  "REGIONS": [
+    "수지구",
+    "분당구",
+    "영통구",
+    "장안구",
+    "권선구",
+    "팔달구",
+    "중원구",
+    "하남시",
+    "위례",
+    "광명시"
+  ],
+  "SEOUL": true,
+  "SEARCH_MONTHS_BACK": 1,
+  "SEARCH_MONTHS_FORWARD": 4
+}
