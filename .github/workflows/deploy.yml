@@ -27,16 +27,9 @@ jobs:
           cfg = {
             "API_KEY": os.environ["API_KEY"],
             "REGIONS": [
-              "수지구",
-              "분당구",
-              "영통구",
-              "장안구",
-              "권선구",
-              "팔달구",
-              "중원구",
-              "하남시",
-              "위례",
-              "광명시"
+              "수지구", "분당구", "영통구",
+              "장안구", "권선구", "팔달구",
+              "중원구", "하남시", "위례", "광명시"
             ],
             "SEOUL": True,
             "SEARCH_MONTHS_BACK": 1,
@@ -44,9 +37,15 @@ jobs:
           }
           with open("config.json", "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
-          print("config.json 생성 완료")
+          print("생성 완료:")
           print(open("config.json").read())
           PY
+
+      - name: .gitignore에서 config.json 제외 규칙 삭제
+        run: |
+          sed -i '/config\.json/d' .gitignore
+          echo ".gitignore 내용:"
+          cat .gitignore
 
       - name: GitHub Pages 배포
         uses: peaceiris/actions-gh-pages@v4
