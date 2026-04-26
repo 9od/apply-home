@@ -23,6 +23,7 @@ import {
   fetchRemndrByRegion,
   fetchRemndrSeoul,
   fetchAPTTypes,
+  fetchRemndrTypes,
 } from './api.js';
 
 // ── 상태 ──────────────────────────────────────────────────────────────
@@ -35,6 +36,8 @@ let fStatus   = 'all';
 
 // 84㎡ 타입 캐시: pblancNo → [{HOUSE_TY, SUPLY_AR, LTTOT_TOP_AMOUNT}]
 const typeCache = new Map();
+// 잔여세대 타입 캐시: pblancNo → [{HOUSE_TY, SUPLY_AR, REMN_HSHLDCO, ...}]
+const remndrTypeCache = new Map();
 
 // ── 초기화 ────────────────────────────────────────────────────────────
 async function init() {
@@ -89,8 +92,9 @@ async function loadAll() {
     aptItems = dedup(aptResults.flat(), 'PBLANC_NO');
     remItems = dedup(remResults.flat(), 'PBLANC_NO');
 
-    // 84㎡ 타입 정보 로드 (진행중·예정 공고만)
-    await loadTypeInfo(aptItems.filter(i => getStatus(i) !== 'end'));
+    // 84㎡ 타입 정보 로드
+    await loadTypeInfo(aptItems);
+    await loadRemndrTypeInfo(remItems);
 
     updateStats();
     updateTabCounts();
@@ -113,7 +117,7 @@ async function loadAll() {
 async function loadTypeInfo(items) {
   const targets = items
     .filter(i => i.PBLANC_NO && !typeCache.has(i.PBLANC_NO))
-    .slice(0, 30); // 과도한 호출 방지
+    .slice(0, 50);
 
   await Promise.allSettled(
     targets.map(async item => {
@@ -125,6 +129,37 @@ async function loadTypeInfo(items) {
       }
     })
   );
+}
+
+/** 잔여세대 주택형별 정보 로드 */
+async function loadRemndrTypeInfo(items) {
+  const targets = items
+    .filter(i => i.PBLANC_NO && !remndrTypeCache.has(i.PBLANC_NO))
+    .slice(0, 50);
+
+  await Promise.allSettled(
+    targets.map(async item => {
+      try {
+        const types = await fetchRemndrTypes(CFG.API_KEY, item.PBLANC_NO);
+        remndrTypeCache.set(item.PBLANC_NO, types);
+      } catch (_) {
+        remndrTypeCache.set(item.PBLANC_NO, []);
+      }
+    })
+  );
+}
+
+/** 잔여세대 84㎡ 이상 세대수 합산 */
+function getRemndr84Units(pblancNo) {
+  const types = remndrTypeCache.get(pblancNo) ?? [];
+  // 84㎡ 이상 타입 필터 후 잔여세대수 합산
+  // 필드: SUPLY_AR(공급면적), REMN_HSHLDCO(잔여세대수), SPSPLY_HSHLDCO(특별공급세대수)
+  return types
+    .filter(t => parseFloat(t.SUPLY_AR ?? '0') >= 84)
+    .reduce((sum, t) => {
+      const remn = parseInt(t.REMN_HSHLDCO ?? t.SUPLY_HSHLDCO ?? '0');
+      return sum + remn;
+    }, 0);
 }
 
 /** 84㎡ 주택형 필터링 */
@@ -189,6 +224,14 @@ function fmtYM(ym) {
   // YYYYMM → YYYY년 MM월
   if (!ym || ym.length < 6) return ym;
   return `${ym.slice(0,4)}년 ${parseInt(ym.slice(4,6))}월`;
+}
+
+/** 만원 단위 → 0.0억 표시 (예: 75000 → 7.5억, 80000 → 8.0억) */
+function fmtEok(manwon) {
+  const n = parseInt(manwon || '0');
+  if (n <= 0) return null;
+  const eok = n / 10000;
+  return `${eok.toFixed(1)}억`;
 }
 
 // ── 통계 ──────────────────────────────────────────────────────────────
@@ -272,12 +315,22 @@ function buildCard(item) {
   const types84 = get84Types(item.PBLANC_NO ?? '');
   let type84Html = '';
   if (types84.length > 0) {
-    const priceStr = types84
-      .map(t => {
-        const p = parseInt(t.LTTOT_TOP_AMOUNT ?? '0');
-        return p > 0 ? `${t.HOUSE_TY} ${p.toLocaleString()}만원` : t.HOUSE_TY;
-      })
-      .join(' / ');
+    // 가격 있는 타입만 추출, 없으면 타입명만
+    const prices = types84
+      .map(t => parseInt(t.LTTOT_TOP_AMOUNT ?? '0'))
+      .filter(p => p > 0);
+
+    let priceStr;
+    if (prices.length > 0) {
+      const minP = Math.min(...prices);
+      const maxP = Math.max(...prices);
+      const minEok = fmtEok(minP);
+      const maxEok = fmtEok(maxP);
+      // 최소=최대면 단일 표시, 다르면 범위 표시
+      priceStr = minP === maxP ? minEok : `${minEok} ~ ${maxEok}`;
+    } else {
+      priceStr = types84.map(t => t.HOUSE_TY).join(', ');
+    }
     type84Html = `<span class="meta price">84㎡ <b>${esc(priceStr)}</b></span>`;
   }
 
@@ -304,6 +357,18 @@ function buildCard(item) {
   // 사업주체
   const bldHtml = item.BSNS_MBY_NM
     ? `<span class="meta">시공 <b>${esc(item.BSNS_MBY_NM)}</b></span>` : '';
+
+  // 잔여세대 84㎡ 이상 남은 세대수
+  let remndr84Html = '';
+  if (isRem) {
+    const units84 = getRemndr84Units(item.PBLANC_NO ?? '');
+    if (units84 > 0) {
+      remndr84Html = `<span class="meta remn84">84㎡↑ 잔여 <b style="color:var(--pur)">${units84}세대</b></span>`;
+    } else if (remndrTypeCache.has(item.PBLANC_NO)) {
+      // 조회는 됐는데 84㎡ 이상 없음
+      remndr84Html = `<span class="meta" style="color:var(--tx3)">84㎡↑ 잔여 없음</span>`;
+    }
+  }
 
   // 잔여세대 구분
   const remTypHtml = isRem && item.HOUSE_SECD_NM
@@ -334,6 +399,7 @@ function buildCard(item) {
       ${dateHtml}
       ${przHtml}
       ${type84Html}
+      ${remndr84Html}
       ${unitsHtml}
       ${mvnHtml}
       ${bldHtml}
